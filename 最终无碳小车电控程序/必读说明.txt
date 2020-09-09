@@ -1,0 +1,2 @@
+注：本工程使用Keil_uVision5创建，请使用Keil_uVision5打开。
+Keil_uVision4及以下版本可能会出现不兼容现象，可使用Keil_uVision4创建新工程，再添加本程序C文件即可。

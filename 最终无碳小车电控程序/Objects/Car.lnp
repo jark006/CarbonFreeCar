@@ -1,0 +1,9 @@
+".\Objects\Car.obj",
+".\Objects\delay.obj",
+".\Objects\direction.obj",
+".\Objects\distance.obj",
+".\Objects\HMC5883.obj",
+".\Objects\MPU6050.obj",
+".\Objects\serial.obj" 
+TO ".\Objects\Car" 
+PRINT(".\Listings\Car.m51") RAMSIZE(256) 

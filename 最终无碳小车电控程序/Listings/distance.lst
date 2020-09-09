@@ -1,0 +1,91 @@
+C51 COMPILER V9.56.0.0   DISTANCE                                                          06/04/2017 15:20:10 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE DISTANCE
+OBJECT MODULE PLACED IN .\Objects\distance.obj
+COMPILER INVOKED BY: D:\Keil5_C51\C51\BIN\C51.EXE code\distance.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\code) DEBUG OBJECTEX
+                    -TEND PRINT(.\Listings\distance.lst) TABS(2) OBJECT(.\Objects\distance.obj)
+
+line level    source
+
+   1          #include <distance.h>
+   2          void Error_Correct_ad(u16 *aa, u8 n)
+   3          {
+   4   1        u16i temp;
+   5   1        u8 i,j;
+   6   1        u16i a[10]= {0};
+   7   1        for(i=0; i<n; i++) a[i] = aa[i];
+   8   1        for(i=0; i<n-1; i++) //n个数,要进行n-1次比较,因为第一个数不用和自身比较.
+   9   1          for(j=0; j<n-1-i; j++) //因为前面已经循环过i次,所以只用执行n-1-i次比较.
+  10   1            if(a[j]<a[j+1])
+  11   1            {
+  12   2              temp=a[j];
+  13   2              a[j]=a[j+1];
+  14   2              a[j+1]=temp;
+  15   2            }
+  16   1        for(i=0; i<n; i++) aa[i] = a[i];
+  17   1      }
+  18          #define ADC_POWER 0x80 //ADC电源控制位
+  19          #define ADC_FLAG 0x10 //ADC完成标志
+  20          #define ADC_START 0x08 //ADC起始控制位
+  21          #define ADC_SPEEDLL 0x00 //540个时钟
+  22          #define ADC_SPEEDL 0x20 //360个时钟
+  23          #define ADC_SPEEDH 0x40 //180个时钟
+  24          #define ADC_SPEEDHH 0x60 //90个时钟
+  25          bit ADCflag = 0;
+  26          bit ADCing = 0;
+  27          /*
+  28          InitADC(); //初始化ADC
+  29          IE = 0xa0; //使能ADC中断
+  30          */
+  31          void adc_isr() interrupt 5 using 1
+  32          {
+  33   1        ADC_CONTR &= !ADC_FLAG; //清除ADC中断标志
+  34   1        ADCflag = 1;
+  35   1      //  SendData(ch); //显示通道号
+  36   1      //  SendData(ADC_RES); //读取高8位结果并发送到串口
+  37   1      // SendData(ADC_RESL); //显示低2位结果
+  38   1      //  if (++ch > 1) ch = 0; //切换到下一个通道
+  39   1      //  ADC_CONTR = ADC_POWER | ADC_SPEEDLL | ADC_START | ch;
+  40   1      }
+  41          /*----------------------------
+  42          初始化ADC
+  43          ----------------------------*/
+  44          void InitADC()
+  45          {
+  46   1      //  P1ASF = 0xff; //设置P1口全部为AD口
+  47   1        P1ASF = 0x0e; //设置P1低6位都为AD口
+  48   1      //  P1ASF = 0x03;
+  49   1        ADC_RES = 0; //清除结果寄存器
+  50   1        ADC_RESL= 0;
+  51   1        ADC_CONTR = ADC_POWER | ADC_SPEEDLL | ADC_START | 0;
+  52   1        //delays(2); //ADC上电并延时
+  53   1      }
+  54          u16 ADC(u8i way)
+C51 COMPILER V9.56.0.0   DISTANCE                                                          06/04/2017 15:20:10 PAGE 2   
+
+  55          {
+  56   1        u16i temp = 0;
+  57   1        ADCing = 1;
+  58   1        if(way > 8) way = 0;
+  59   1        ADCflag = 0;
+  60   1        ADC_CONTR = ADC_POWER | ADC_SPEEDLL | ADC_START | way;
+  61   1        while(~ADCflag);
+  62   1        temp = (ADC_RES<<2)+(ADC_RESL&0x03);
+  63   1        ADCing = 0;
+  64   1        return temp;
+  65   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    307    ----
+   CONSTANT SIZE    =     20    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       5
+   IDATA SIZE       =   ----      24
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

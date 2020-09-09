@@ -1,0 +1,60 @@
+C51 COMPILER V9.56.0.0   SERIAL                                                            06/04/2017 15:20:10 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE SERIAL
+OBJECT MODULE PLACED IN .\Objects\serial.obj
+COMPILER INVOKED BY: D:\Keil5_C51\C51\BIN\C51.EXE code\serial.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\code) DEBUG OBJECTEXTE
+                    -ND PRINT(.\Listings\serial.lst) TABS(2) OBJECT(.\Objects\serial.obj)
+
+line level    source
+
+   1          #include <serial.h>
+   2          /*********************************************************************************************************
+             -******************************************
+   3            模拟串口发送函数*/
+   4          void Delay104us()   //@11.0592MHz 1T 9600
+   5          {
+   6   1        u8 i, j;
+   7   1        _nop_();
+   8   1        _nop_();
+   9   1        i = 2;
+  10   1        j = 26;
+  11   1        do
+  12   1        {
+  13   2          while (--j);
+  14   2        }
+  15   1        while (--i);
+  16   1      }
+  17          void sendbyte(u8 byte)
+  18          {
+  19   1        u8 i=8;
+  20   1        TXD = 0;
+  21   1        Delay104us();
+  22   1        while(i--)
+  23   1        {
+  24   2          TXD=(byte&0x01); //先传低位
+  25   2          Delay104us();
+  26   2          byte=byte>>1;
+  27   2        }
+  28   1        TXD = 1;
+  29   1        Delay104us();
+  30   1      }
+  31          void send(u8 *p)
+  32          {
+  33   1        while(*p)
+  34   1          sendbyte(*p++);
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     81    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
