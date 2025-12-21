@@ -7,12 +7,13 @@
 
   <Targets>
     <Target>
-      <TargetName>Code</TargetName>
+      <TargetName>CarbonFreeCar</TargetName>
       <ToolsetNumber>0x0</ToolsetNumber>
       <ToolsetName>MCS-51</ToolsetName>
+      <uAC6>8</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STC15F2K60S2</Device>
+          <Device>STC15F2K60S2 Series</Device>
           <Vendor>STC</Vendor>
           <Cpu>IRAM(0-0xFF) XRAM(0-0x6FF) IROM(0-0xEFF8) CLOCK(35000000) MODP2</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -190,10 +191,10 @@
             <RomSize>2</RomSize>
             <DataHold>0</DataHold>
             <XDataHold>0</XDataHold>
-            <UseOnchipRom>0</UseOnchipRom>
+            <UseOnchipRom>1</UseOnchipRom>
             <UseOnchipArithmetic>0</UseOnchipArithmetic>
             <UseMultipleDPTR>0</UseMultipleDPTR>
-            <UseOnchipXram>0</UseOnchipXram>
+            <UseOnchipXram>1</UseOnchipXram>
             <HadIRAM>1</HadIRAM>
             <HadXRAM>1</HadXRAM>
             <HadIROM>1</HadIROM>
@@ -217,12 +218,14 @@
             <Mx51P>0</Mx51P>
             <hadXRAM2>0</hadXRAM2>
             <uocXram2>0</uocXram2>
+            <hadXRAM3>0</hadXRAM3>
             <ModC2>0</ModC2>
             <ModH2>0</ModH2>
             <Mdu_R515>0</Mdu_R515>
             <Mdu_F120>0</Mdu_F120>
             <Psoc>0</Psoc>
             <hadIROM2>0</hadIROM2>
+            <hadIROM3>0</hadIROM3>
             <ModSmx2>0</ModSmx2>
             <cBanks>0</cBanks>
             <xBanks>0</xBanks>
@@ -292,6 +295,16 @@
                 <StartAddress>0x0</StartAddress>
                 <Size>0x0</Size>
               </IROM512>
+              <XRA513>
+                <Type>0</Type>
+                <StartAddress>0x0</StartAddress>
+                <Size>0x0</Size>
+              </XRA513>
+              <IROM513>
+                <Type>0</Type>
+                <StartAddress>0x0</StartAddress>
+                <Size>0x0</Size>
+              </IROM513>
             </OnChipMemories>
           </Target51Misc>
           <C51>
@@ -311,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\code</IncludePath>
+              <IncludePath>.\src</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -361,57 +374,47 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>main</GroupName>
+          <GroupName>src</GroupName>
           <Files>
             <File>
-              <FileName>Car.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Car.c</FilePath>
+              <FilePath>.\src\main.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>other</GroupName>
-          <Files>
             <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\delay.c</FilePath>
+              <FilePath>.\src\delay.c</FilePath>
             </File>
             <File>
               <FileName>direction.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\direction.c</FilePath>
+              <FilePath>.\src\direction.c</FilePath>
             </File>
             <File>
               <FileName>distance.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\distance.c</FilePath>
+              <FilePath>.\src\distance.c</FilePath>
             </File>
             <File>
               <FileName>HMC5883.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\HMC5883.c</FilePath>
+              <FilePath>.\src\HMC5883.c</FilePath>
             </File>
             <File>
               <FileName>MPU6050.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\MPU6050.c</FilePath>
+              <FilePath>.\src\MPU6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>oled.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\oled.c</FilePath>
             </File>
             <File>
               <FileName>serial.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\serial.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Content</GroupName>
-          <Files>
-            <File>
-              <FileName>必读说明.txt</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\必读说明.txt</FilePath>
+              <FilePath>.\src\serial.c</FilePath>
             </File>
           </Files>
         </Group>
