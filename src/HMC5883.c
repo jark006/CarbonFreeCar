@@ -4,7 +4,6 @@ sbit SCL2 = P5 ^ 4;            //IIC时钟引脚定义
 sbit SDA2 = P5 ^ 5;            //IIC数据引脚定义
 
 #define SlaveAddress 0x3C      //定义器件在IIC总线中的从地址
-u8 HMC5883BUF[8];              //接收数据缓存区
 
 void HMC5883_Start() {
     SDA2 = 1;                    //拉高数据线
@@ -77,8 +76,10 @@ void Single_Write_HMC5883(u8 REG_Address, u8 REG_data) {
 }
 
 //连续读出HMC5883内部角度数据，地址范围 0x3 ~ 0x5
-void Read_HMC5883() {
+HMC_DATA Read_HMC5883() {
+    HMC_DATA hmcData;
     u8 i;
+
     HMC5883_Start();                          //起始信号
     HMC5883_SendByte(SlaveAddress);           //发送设备地址+写信号
     HMC5883_SendByte(0x03);                   //发送存储单元地址，从0x3开始
@@ -86,11 +87,11 @@ void Read_HMC5883() {
     HMC5883_Start();                          //起始信号
     HMC5883_SendByte(SlaveAddress + 1);       //发送设备地址+读信号
     for (i = 0; i < 6; i++) {
-        HMC5883BUF[i] = HMC5883_RecvByte();   //连续读取6个地址数据，存储中BUF
+        ((u8*)&hmcData)[i] = HMC5883_RecvByte();   //连续读取6个地址数据，存储中BUF
         HMC5883_SendACK(i == 5 ? 1 : 0);      //最后一个数据需要回 NOACK
     }
     HMC5883_Stop();                           //停止信号
-    delayms(5);
+    return hmcData;
 }
 
 //初始化HMC5883

@@ -10,16 +10,16 @@
 
 bit ADCflag = 0;
 
-void quickSortAscending(uint16_t* arr, uint8_t length) {
+void quickSortAscending(u16* arr, u8 length) {
     if (length <= 1) {
         return;
     }
     
     {
         // 选择中间元素作为基准
-        uint16_t pivot = arr[length / 2];
-        uint8_t i = 0;
-        uint8_t j = length - 1;
+        u16 pivot = arr[length / 2];
+        u8 i = 0;
+        u8 j = length - 1;
 
         while (i <= j) {
             // 从左向右找到第一个大于等于基准的元素
@@ -32,7 +32,7 @@ void quickSortAscending(uint16_t* arr, uint8_t length) {
             }
             // 交换这两个元素
             if (i <= j) {
-                uint16_t temp = arr[i];
+                u16 temp = arr[i];
                 arr[i] = arr[j];
                 arr[j] = temp;
                 i++;
@@ -69,4 +69,17 @@ u16 getADCValue(u8 channel) {
     ADC_CONTR = ADC_POWER | ADC_SPEEDLL | ADC_START | (channel & 0x07);// 确保通道号在0-7之间
     while (~ADCflag);
     return (ADC_RES << 2) + (ADC_RESL & 0x03);
+}
+
+// ADC数值转距离 cm
+u8 ADValue2Distance(u16 ADValue) {
+    if (ADValue > 500)
+        ADValue = 500;
+    if (ADValue < 75)
+        ADValue = 75;
+
+    if (ADValue > 125)
+        return 22 / (ADValue * 0.004883 - 0.18);
+    else
+        return 29.3 / (ADValue * 0.004883 - 0.024);
 }

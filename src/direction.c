@@ -10,4 +10,7 @@ void Init_Timer() {
     TL1 = 0;
     T2L = 0x00;        //设置定时初值  10ms
     T2H = 0xDC;        //设置定时初值
+    
+    TR0 = 1;
+    TR1 = 1;
 }

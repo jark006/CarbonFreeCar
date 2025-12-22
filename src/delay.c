@@ -2,8 +2,8 @@
 
 // ÑÓÊ±º¯Êý
 void delay5us() {
-    u8i a = 20;
-    while (a--);
+    u8 n = 20;
+    while (n--);
 }
 
 //@11.0592MHz STC15 1T
