@@ -5,6 +5,6 @@
 void quickSortAscending(u16* arr, u8 length);
 void Init_ADC();
 u16 getADCValue(u8 channel);
-u8 ADValue2Distance(u16 ADValue);
+u16 ADValue2Distance(u16 ADValue);
 
 #endif

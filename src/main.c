@@ -10,7 +10,7 @@
 #include "HMC5883.h"
 #include "MPU6050.h"
 #include "delay.h"
-#include "direction.h"
+#include "timer.h"
 #include "distance.h"
 #include "oled.h"
 #include "serial.h"
@@ -31,13 +31,12 @@ bit isNeedBrake = TRUE;        // 需要刹车标志位
 bit isUpsloping = 0;           // 上坡中标志位
 bit isOnSlopetop = 0;          // 在坡顶标志位
 u8 servoBrakeAngle = 90;       // 舵机刹车角度
-bit isDebouncing = 0;          // 码盘计数消抖标志位
 u16 horizontalValue = 0;       // 当前水平加速度值
 u16 horizontalValueBegin = 0;  // 初始水平加速度值
 u8 directionValueBegin = 0;    // 初始车身方向值
 u8 directionValue = 1;         // 当前车身方向值
-u8 leftDistance = 0;           // 左距离
-u8 rightDistance = 0;          // 右距离
+u16 leftDistance = 10;          // 左距离 毫米 mm 0~900
+u16 rightDistance = 10;         // 右距离 毫米 mm 0~900
 u8 walkingStage = 'A';         // 赛道阶段
 u8 directionAngleTarget = 90;  // 目标方向舵机角度
 u8 directionAngleCurrent = 90; // 当前方向舵机角度
@@ -183,8 +182,8 @@ void StageJudge() {
 
 // 测量距离
 void MeasuringDistance() {
-    static u8 distanceVecLast[5] = {0};
-    u8 distanceVec[5] = {0};
+    static u16 distanceVecLast[5] = {0};
+    u16 distanceVec[5] = {0};
     u8 i, j;
 
     for (j = 1; j < 4; j++) {
@@ -225,53 +224,41 @@ void DisplayData() {
 
 // 计算偏转角
 void AngleCalculate() {
-    float scaling; // 左右对比距离比例
-    u8 deflection; // 左右偏角
-
     if (leftDistance > rightDistance) {
-        scaling = (float)(leftDistance - rightDistance) / rightDistance;
-        if (scaling > 1.0)
-            scaling = 1.0;
-        deflection = scaling * ANGLE_TURN_MAX;
-        directionAngleTarget = 90 - deflection;
-        if (directionAngleTarget < 45)
-            directionAngleTarget = 45;
+        u16 turnAngle =
+            ANGLE_TURN_MAX * (leftDistance - rightDistance) / rightDistance;
+        if (turnAngle > ANGLE_TURN_MAX)
+            turnAngle = ANGLE_TURN_MAX;
+        directionAngleTarget = 90 - turnAngle;
     } else {
-        scaling = (float)(rightDistance - leftDistance) / leftDistance;
-        if (scaling > 1.0)
-            scaling = 1.0;
-        deflection = scaling * ANGLE_TURN_MAX;
-        directionAngleTarget = 90 + deflection;
-        if (directionAngleTarget > 135)
-            directionAngleTarget = 135;
+        u16 turnAngle =
+            ANGLE_TURN_MAX * (rightDistance - leftDistance) / leftDistance;
+        if (turnAngle > ANGLE_TURN_MAX)
+            turnAngle = ANGLE_TURN_MAX;
+        directionAngleTarget = 90 + turnAngle;
     }
 }
 
 // 外部中断1  码盘计数
-void countITR() INTERRUPT(2) {
-    if (isDebouncing) // 抖动中
-        return;
-
+void countITR() INTERRUPT(2) USING(3) {
+    EX1 = 0; // 关闭外部中断1
     way_count++;
     journey++;
-    EX1 = 0; // 关闭外部中断1
 
     // 每次计数后启动定时器2进行消抖
     T2L = 0x00;   // 设置定时初值  10ms 11.0592 12T
     T2H = 0xDC;   // 设置定时初值
     AUXR |= 0X10; // 开始计时
-    isDebouncing = 1;
 }
 
 // 定时2中断
-void clear_flag() INTERRUPT(12) {
-    isDebouncing = 0; // 消抖完成
-    AUXR &= 0XEF;
-    EX1 = 1;
+void clear_flag() INTERRUPT(12) USING(3) {
+    AUXR &= 0XEF; // 关闭定时器2
+    EX1 = 1;      // 消抖完成
 }
 
 // 方向舵机PWM控制 定时器0中断
-void Direction_ctrl() INTERRUPT(1) {
+void Direction_ctrl() INTERRUPT(1) USING(1) {
     static bit PWM_LEVEL = 0;
     u16 speedInvert;
     u16 timerValue;
@@ -303,7 +290,7 @@ void Direction_ctrl() INTERRUPT(1) {
 }
 
 // 刹车舵机PWM控制  定时器1中断
-void Brake_ctrl() INTERRUPT(3) {
+void Brake_ctrl() INTERRUPT(3) USING(2) {
     static u8 cnt20ms = 0;
     static bit PWM_LEVEL = 0;
     u16 timerValue;
@@ -323,8 +310,7 @@ void Brake_ctrl() INTERRUPT(3) {
 
         if (++cnt20ms >= 25) { // 每 500ms 统计一次速度
             cnt20ms = 0;
-            if ((way_count > way_count_last) &&
-                (way_count - way_count_last) > SPEED_ADD_UP)
+            if (way_count > (way_count_last + SPEED_ADD_UP))
                 way_count = way_count_last + SPEED_ADD_UP;
             way_count_last = way_count;
             currentSpeed = way_count;
