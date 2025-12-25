@@ -1,7 +1,7 @@
 #include "HMC5883.h"
 
-sbit SCL2 = P5 ^ 4;            //IIC时钟引脚定义
-sbit SDA2 = P5 ^ 5;            //IIC数据引脚定义
+#define SCL2 P54            //IIC时钟引脚定义
+#define SDA2 P55            //IIC数据引脚定义
 
 #define SlaveAddress 0x3C      //定义器件在IIC总线中的从地址
 

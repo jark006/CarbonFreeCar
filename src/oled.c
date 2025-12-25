@@ -4,8 +4,8 @@
 #define WIDTH     128
 #define HEIGHT    64
 
-sbit SCL = P2 ^ 0;
-sbit SDA = P2 ^ 1;
+#define SCL P20
+#define SDA P21
 
 //ASCII字符集  偏移量32  大小:12*6
 /************************************6*8的点阵************************************/

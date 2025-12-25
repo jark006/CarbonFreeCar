@@ -1,7 +1,7 @@
 #include "MPU6050.h"
 
-sbit SCL3 = P3^0;  //IIC时钟引脚定义
-sbit SDA3 = P3^1;  //IIC数据引脚定义
+#define SCL3 P30  //IIC时钟引脚定义
+#define SDA3 P31  //IIC数据引脚定义
 
 // MPU6050 内部地址
 #define    SMPLRT_DIV      0x19    //陀螺仪采样率，典型值：0x07(125Hz)

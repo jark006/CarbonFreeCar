@@ -10,10 +10,10 @@
 #include "HMC5883.h"
 #include "MPU6050.h"
 #include "delay.h"
-#include "timer.h"
 #include "distance.h"
 #include "oled.h"
 #include "serial.h"
+#include "timer.h"
 
 #define SPEED_ADD_UP 50       // 增度上限
 #define SPEED_BRAKE_ON 15     // 触发刹车速度
@@ -21,6 +21,8 @@
 #define ANGLE_BRAKE_ON 93     // 刹重锤角度
 #define ANGLE_BRAKE_OFF 70    // 放重锤角度
 #define ANGLE_TURN_MAX 30     // 最大转向角度
+#define ANGLE_MAX 120         // 最大角度
+#define ANGLE_MIN 60          // 最小角度
 #define upslope_deviation 30  // 上坡识别误差
 #define slopetop_deviation 15 // 坡顶识别误差
 #define SPEED_MAX 25          // 最大速度
@@ -30,28 +32,28 @@ u8 currentSpeed = 6;           // 当前速度 6 ~ 25
 bit isNeedBrake = TRUE;        // 需要刹车标志位
 bit isUpsloping = 0;           // 上坡中标志位
 bit isOnSlopetop = 0;          // 在坡顶标志位
-u8 servoBrakeAngle = 90;       // 舵机刹车角度
+u8 servoBrakeAngle = 70;       // 重锤舵机角度
 u16 horizontalValue = 0;       // 当前水平加速度值
 u16 horizontalValueBegin = 0;  // 初始水平加速度值
 u8 directionValueBegin = 0;    // 初始车身方向值
 u8 directionValue = 1;         // 当前车身方向值
-u16 leftDistance = 10;          // 左距离 毫米 mm 0~900
-u16 rightDistance = 10;         // 右距离 毫米 mm 0~900
+u16 leftDistance = 10;         // 左距离 毫米 mm 0~900
+u16 rightDistance = 10;        // 右距离 毫米 mm 0~900
 u8 walkingStage = 'A';         // 赛道阶段
-u8 directionAngleTarget = 90;  // 目标方向舵机角度
-u8 directionAngleCurrent = 90; // 当前方向舵机角度
+u8 directionAngleTarget = 90;  // 目标方向舵机角度 60 ~ 120
+u8 directionAngleCurrent = 90; // 当前方向舵机角度 60 ~ 120
 u16 way_count_last = 0;        // 上次码盘计数
 u16 way_count = 0;             // 码盘计数
 u16 journey = 0;               // 总里程
 
 // 开关引脚 用于设置显示哪些数据
-sbit sw1 = P2 ^ 2;
-sbit sw2 = P2 ^ 3;
-sbit sw3 = P2 ^ 4;
-sbit sw4 = P2 ^ 5;
+#define sw1 P22
+#define sw2 P23
+#define sw3 P24
+#define sw4 P25
 
-sbit SERVO_DIRECTION_PIN = P3 ^ 4; // 舵机方向控制引脚
-sbit SERVO_BRAKE_PIN = P3 ^ 5;     // 舵机刹车控制引脚
+#define SERVO_DIREC_PIN P34 // 舵机方向控制引脚
+#define SERVO_BRAKE_PIN P35 // 舵机刹车控制引脚
 
 // 函数声明
 void GetInitialData();
@@ -78,9 +80,7 @@ void main() {
     OLED_Clear();
     OLED_ShowString(8, 0, "Left     Right", 16);
 
-    delayms(500);
     GetInitialData(); // 获取起步数据
-    delayms(500);
 
     while (1) {
         UpdateAttitude();    // 更新姿态 朝向、倾斜度
@@ -97,17 +97,21 @@ void GetInitialData() {
     u16 directionValueSum = 0;
     u16 horizontalValueSum = 0;
 
+    delayms(500);
+
     // 取10次平均
     for (i = 0; i < 10; i++) {
         UpdateAttitude(); // 更新姿态
         directionValueSum += directionValue;
         horizontalValueSum += horizontalValue;
-        delayms(10);
+        delayms(100);
     }
 
-    directionValueBegin = (u16)(directionValueSum / 10.0 + 0.5);
-    horizontalValueBegin = (u16)(horizontalValueSum / 10.0 + 0.5);
+    directionValueBegin = (directionValueSum + 5) / 10;   // 四舍五入，平均
+    horizontalValueBegin = (horizontalValueSum + 5) / 10;
     OLED_ShowNum(104, 2, directionValueBegin, 1, 16);
+
+    delayms(500);
 }
 
 // 更新姿态 朝向、倾斜度
@@ -257,6 +261,24 @@ void clear_flag() INTERRUPT(12) USING(3) {
     EX1 = 1;      // 消抖完成
 }
 
+code u16 ANGLE2TIME_HIGH_TAB[] = {
+    64461, 64450, 64440, 64430, 64420, 64410, 64399, 64389, 64379, 64369, 64358,
+    64348, 64338, 64328, 64317, 64307, 64297, 64287, 64277, 64266, 64256, 64246,
+    64236, 64225, 64215, 64205, 64195, 64184, 64174, 64164, 64154, 64144, 64133,
+    64123, 64113, 64103, 64092, 64082, 64072, 64062, 64052, 64041, 64031, 64021,
+    64011, 64000, 63990, 63980, 63970, 63959, 63949, 63939, 63929, 63919, 63908,
+    63898, 63888, 63878, 63867, 63857, 63847,
+};
+
+code u16 ANGLE2TIME_LOW_TAB[] = {
+    48179, 48190, 48200, 48210, 48220, 48230, 48241, 48251, 48261, 48271, 48282,
+    48292, 48302, 48312, 48323, 48333, 48343, 48353, 48363, 48374, 48384, 48394,
+    48404, 48415, 48425, 48435, 48445, 48456, 48466, 48476, 48486, 48496, 48507,
+    48517, 48527, 48537, 48548, 48558, 48568, 48578, 48589, 48599, 48609, 48619,
+    48629, 48640, 48650, 48660, 48670, 48681, 48691, 48701, 48711, 48721, 48732,
+    48742, 48752, 48762, 48773, 48783, 48793,
+};
+
 // 方向舵机PWM控制 定时器0中断
 void Direction_ctrl() INTERRUPT(1) USING(1) {
     static bit PWM_LEVEL = 0;
@@ -265,14 +287,16 @@ void Direction_ctrl() INTERRUPT(1) USING(1) {
 
     if (!PWM_LEVEL) {
         PWM_LEVEL = 1;
-        SERVO_DIRECTION_PIN = 1;
-        timerValue = 65075 - directionAngleCurrent * 10.23;
+        SERVO_DIREC_PIN = 1;
+        // timerValue = 65075 - directionAngleCurrent * 10.23;
+        timerValue = ANGLE2TIME_HIGH_TAB[directionAngleCurrent - ANGLE_MIN];
         TH0 = timerValue >> 8;
         TL0 = timerValue & 0xFF;
     } else {
         PWM_LEVEL = 0;
-        SERVO_DIRECTION_PIN = 0;
-        timerValue = 47566 + directionAngleCurrent * 10.23;
+        SERVO_DIREC_PIN = 0;
+        // timerValue = 47566 + directionAngleCurrent * 10.23;
+        timerValue = ANGLE2TIME_LOW_TAB[directionAngleCurrent - ANGLE_MIN];
         TH0 = timerValue >> 8;
         TL0 = timerValue & 0xFF;
 
@@ -286,6 +310,12 @@ void Direction_ctrl() INTERRUPT(1) USING(1) {
             directionAngleCurrent -=
                 ((directionAngleCurrent - directionAngleTarget) / speedInvert +
                  2);
+
+        if (directionAngleCurrent > ANGLE_MAX) {
+            directionAngleCurrent = ANGLE_MAX;
+        } else if (directionAngleCurrent < ANGLE_MIN) {
+            directionAngleCurrent = ANGLE_MIN;
+        }
     }
 }
 
@@ -298,13 +328,15 @@ void Brake_ctrl() INTERRUPT(3) USING(2) {
     if (!PWM_LEVEL) {
         PWM_LEVEL = 1;
         SERVO_BRAKE_PIN = 1;
-        timerValue = 65075 - servoBrakeAngle * 10.23;
+        // timerValue = 65075 - servoBrakeAngle * 10.23;
+        timerValue = ANGLE2TIME_HIGH_TAB[directionAngleCurrent - ANGLE_MIN];
         TH1 = timerValue >> 8;
         TL1 = timerValue & 0xff;
     } else {
         PWM_LEVEL = 0;
         SERVO_BRAKE_PIN = 0;
-        timerValue = 47566 + servoBrakeAngle * 10.23;
+        // timerValue = 47566 + servoBrakeAngle * 10.23;
+        timerValue = ANGLE2TIME_LOW_TAB[directionAngleCurrent - ANGLE_MIN];
         TH1 = timerValue >> 8;
         TL1 = timerValue & 0xff;
 
