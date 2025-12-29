@@ -23,8 +23,6 @@
                 "sfr=char",
                 "sfr16=int",
                 "sfr32=int",
-                "interrupt=",
-                "using=",
                 "_at_=",
                 "_priority_=",
                 "_task_="

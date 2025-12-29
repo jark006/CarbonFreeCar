@@ -1,3 +1,7 @@
 {
-    "files.encoding": "gbk"
+    "files.encoding": "gbk",
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c"
+    }
 }
