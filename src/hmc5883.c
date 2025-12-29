@@ -1,4 +1,4 @@
-#include "HMC5883.h"
+#include "hmc5883.h"
 
 #define SCL2 P54            //IIC时钟引脚定义
 #define SDA2 P55            //IIC数据引脚定义

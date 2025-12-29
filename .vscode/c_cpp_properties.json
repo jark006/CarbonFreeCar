@@ -3,7 +3,7 @@
         {
             "name": "CarbonFreeCar",
             "includePath": [
-                "d:\\workSpace\\CarbonFreeCar\\src"
+                "${workspaceFolder}/src"
             ],
             "defines": [
                 "__C51__",

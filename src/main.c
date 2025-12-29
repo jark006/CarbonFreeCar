@@ -7,9 +7,9 @@
 程序作者：陈思杰
 **********************************************************************************/
 
-#include "HMC5883.h"
-#include "MPU6050.h"
 #include "delay.h"
+#include "hmc5883.h"
+#include "mpu6050.h"
 #include "distance.h"
 #include "oled.h"
 #include "serial.h"

@@ -1,4 +1,4 @@
-#include "MPU6050.h"
+#include "mpu6050.h"
 
 #define SCL3 P30  //IIC时钟引脚定义
 #define SDA3 P31  //IIC数据引脚定义

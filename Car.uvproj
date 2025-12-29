@@ -397,14 +397,14 @@
               <FilePath>.\src\distance.c</FilePath>
             </File>
             <File>
-              <FileName>HMC5883.c</FileName>
+              <FileName>hmc5883.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\HMC5883.c</FilePath>
+              <FilePath>.\src\hmc5883.c</FilePath>
             </File>
             <File>
-              <FileName>MPU6050.c</FileName>
+              <FileName>mpu6050.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\MPU6050.c</FilePath>
+              <FilePath>.\src\mpu6050.c</FilePath>
             </File>
             <File>
               <FileName>oled.c</FileName>
